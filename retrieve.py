@@ -16,7 +16,7 @@ def retrieve_pdb(uniprot_id, output_dir):
 
 def main():
     if len(sys.argv) < 3 or len(sys.argv) > 4:
-        print("Usage: python retrieval.py /path/proteins.xlsx structure_dir [sheet_index]")
+        print("Usage: python retrieve.py /path/proteins.xlsx structure_dir [sheet_index]")
         sys.exit(1)
     
     excel_path = sys.argv[1]
