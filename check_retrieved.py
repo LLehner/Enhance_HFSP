@@ -3,12 +3,13 @@ import sys
 import pandas as pd
 
 def main():
-    if len(sys.argv) != 3:
-        print("Usage: python check_retrieved.py directory/of/pdb_files file.xlsx")
+    if len(sys.argv) < 3 or len(sys.argv) > 4:
+        print("Usage: python check_retrieved.py directory/of/pdb_files file.xlsx [sheet index]")
         sys.exit(1)
     
     pdb_directory = sys.argv[1]
     excel_path = sys.argv[2]
+    sheet_index = int(sys.argv[3]) if len(sys.argv) == 4 else None
 
     # Ensure pdb_directory exists
     if not os.path.isdir(pdb_directory):
@@ -16,7 +17,12 @@ def main():
         sys.exit(1)
 
     # Read Excel file
-    df = pd.read_excel(excel_path)
+    if sheet_index is not None:
+        xls = pd.ExcelFile(excel_path)
+        sheet_name = xls.sheet_names[sheet_index]
+        df = pd.read_excel(xls, sheet_name=sheet_name)
+    else:
+        df = pd.read_excel(excel_path)
 
     # Ensure 'id' column exists
     if 'id' not in df.columns:
