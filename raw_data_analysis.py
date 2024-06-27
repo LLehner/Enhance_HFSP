@@ -81,7 +81,7 @@ def main(data_path, ids_path, save_path, sheet_index):
 
 if __name__ == "__main__":
     if len(sys.argv) < 4 or len(sys.argv) > 5:
-        print("Usage: python data_analysis.py <pdb_folder_path> <ids_excel_path> <output_path> [sheet index]")
+        print("Usage: python raw_data_analysis.py <pdb_folder_path> <ids_excel_path> <output_path> [sheet index]")
         sys.exit(1)
 
     pdb_path = sys.argv[1]
