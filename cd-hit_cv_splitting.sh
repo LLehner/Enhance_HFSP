@@ -4,8 +4,8 @@
 # assuming '-aS' is the target sequence coverage from the HFSP paper
 
 cd-hit \
-   -i testing/Swiss-Prot_2002_redundancy-reduced.fasta \
-   -o testing/Swiss-Prot_2002_redundancy-reduced_clusters.fasta \
+   -i testing/3_after_ec_filtering/Swiss-Prot_2002_redundancy_reduced_50.fasta \
+   -o testing/4_after_cv_split/Swiss-Prot_2002_clustering.fasta \
    -c 0.4 \
    -n 2 \
    -d 0 \
