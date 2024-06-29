@@ -1,0 +1,51 @@
+not_found, alternative_id, full name of not_found, note
+Q811C4, O08749, Dihydrolipoyl dehydrogenase mitochondrial, taken from different organism (mus musculus)
+Q03132, A0A386A1F4, 6-deoxyerythronolide-B synthase EryA2 modules 3 and 4, taken from different organism (Streptomyces griseorubiginosus)
+Q9NNW7, A0A096LP96, Thioredoxin reductase 2 mitochondrial, different id
+P83448, P60069, Chlorate reductase subunit alpha, different gene taken from different organism (Ideonella dechloratans)
+Q03131, A0A7Z7IPM1, 6-deoxyerythronolide-B synthase EryA1 modules 1 and 2, taken from different organism (Mycobacterium simulans)
+P24183, P0AAJ3, Formate dehydrogenase nitrate-inducible major subunit, iron-sulfur subunit
+Q9C0D9, C9JAG1, Ethanolaminephosphotransferase 1, different id
+Q9Y8A5, Q9Y8A5, Lovastatin nonaketide synthase polyketide synthase component, experimental structure taken from swiss-model
+Q8FDI4, Q8FDI4, Arylsulfate sulfotransferase AssT, experimental structures taken from swiss-model
+O70325, S4R1E5, Phospholipid hydroperoxide glutathione peroxidase GPX4, different id
+Q86VQ6, H0YBI6, Thioredoxin reductase 3, different id
+B3Y522, A0A1J1LV98, Dammaradiene synthase, taken from different organism (Planktothrix tepida PCC 9214)
+P81107, Q4W8D0, Probable glutamine synthetase leaf isozyme, different protein taken from different organism (Oryza sativa subsp. japonica (Rice))
+P83380, Q9LMX4, Purple acid phosphatase isozyme LeSAP1, different protein taken from different organism (Arabidopsis Thaliana)
+P16101, A0A1W5CZ61, Choline oxidase, taken from different organism (Lasallia Pustulata)
+Q99611, B4E093, Selenide water dikinase 2, for homo sapiens
+Q16881, E9PIZ5, Thioredoxin reductase 1 cytoplasmic, just different id
+D3JTC2, O34819, Pectate lyase B, taken from different organism (Bacillus subtilis)
+B0LDU6, Q86JI5, Polyketide synthase 5, taken from different organism (Dictyostelium discoideum)
+O93658, O93658 , Trimethylamine methyltransferase MttB, experimental structure taken from swiss-model
+Q19A54, A0A0I9X9T0, Nitrilase, taken from different organism (Gibberella fujikuroi)
+P04745, P0DTE7, Alpha-amylase 1B, obsolute since 2020/06 alternative id for homo sapiens found
+F2Z9C1, L7X0L7, Protopine 6-monooxygenase, taken from different organism (Papaver somniferum)
+P80951, Q58896, F420-dependent NADP reductase, taken from different organism (Methanocaldococcus jannaschii)
+Q715L4, A0A2V1JL76, Phloretin hydrolase, different id
+Q9JMH6, A0A1W2P6U1, Thioredoxin reductase 1 cytoplasmic, different id
+P36969, A0A087X247, Phospholipid hydroperoxide glutathione peroxidase, same gene but different id
+P19321, U6E8V8, Botulinum neurotoxin type D, from Gene D but protein called type C/D
+Q75WB5, F1ME97, 5-oxoprolinase, different id
+P00435, Q28035, Glutathione peroxidase 1, protein from different gene GSTA1 taken
+Q9JLT4, Q9JLT4, Thioredoxin reductase 2 mitochondrial, experimental structure taken from swiss-model
+P83252, A0A287FZX3, Beta-galactosidase, different id
+Q56775, A0A0A6U3B8, GDP-mannose:glycolipid 4-beta-D-mannosyltransferase, taken from different organism (Xanthomonas campestris pv. phaseoli)
+O93661, A0A0E3SIC0, Dimethylamine methyltransferase MtbB1, taken from different organism (Methanosarcina barkeri 3)
+Q9Z0J5, F1M6X5, Thioredoxin reductase 2 mitochondrial, different id
+P04041, M0RAM5, Glutathione peroxidase 1, just different id but this time for rattus norvegicus
+O89049, O89049, Thioredoxin reductase 1 cytoplasmic, experimental structure taken from swiss-model
+P45845, P28301, Protein-lysine 6-oxidase, taken from different organism (mus musculus)
+Q8WZ42, Q8WZ42, Titin, experimental structure taken from swiss-model
+P83645, A0A0G2K278, Glutathione peroxidase 2, different id
+P97364, Q6PKB1, Selenide water dikinase 2, structure for correct gene Sephs2 is called Sps2 protein
+P81563, B5DFD5, Interstitial collagenase, just different id
+Q03133, A0A2S8BBP6, 6-deoxyerythronolide-B synthase EryA3 modules 5 and 6, taken from different organism (Mycobacterium talmoniae)
+P51698, A0A1L5BTC1, Haloalkane dehalogenase, obsolete since 2018/07 experimental structure taken from swiss-model for new id
+B9A1H3, Q6F5E7, Thioredoxin reductase SEP1, taken from different organism (Homo Sapiens)
+P19985, Q25489, Juvenile hormone esterase, just different id
+P10845, P0PI0, Botulinum neurotoxin type A, obsolute since 2018/07
+P36970, A0A0G2K398, Phospholipid hydroperoxide glutathione peroxidase, (GPX4 for rattus norvegicus) different id
+P18640, U6E8Q9, Botulinum neurotoxin type C, experimental structures only cover subset of sequence
+Q8H0G0, Q8H0D3, 3 7-dimethylxanthine N-methyltransferase 2, different protein taken
