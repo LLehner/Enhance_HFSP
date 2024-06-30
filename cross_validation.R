@@ -139,7 +139,7 @@ cross_validation_results <- lapply(1:length(train_files), function(i) {
   cat("Test data loaded for fold", i, "\n")
 
   # Use all other clusters as the training set
-  train_data <- rbindlist(lapply(train_files[-i], read_data))
+  train_data <- rbindlist(lapply(train_files[i], read_data))
   cat("Train data loaded for fold", i, "\n")
 
   # Perform grid search to find best parameters
