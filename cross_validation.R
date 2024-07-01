@@ -12,7 +12,7 @@ hfsp <- function(params, ungapped_alnlen, pident) {
   exponent <- params[2]
 
   hfsp <- ifelse(ungapped_alnlen <= 11,
-                 PIDE - 101,
+                 pident - 101,
                  ifelse(ungapped_alnlen > 450,
                         pident - 28.4,
                         pident - (factor * (ungapped_alnlen ^ (exponent * (1 + exp(- ungapped_alnlen / 1000)))))))
@@ -20,7 +20,7 @@ hfsp <- function(params, ungapped_alnlen, pident) {
   return(hfsp)
 }
 
-# Define the objective function to minimize (negative F1 score)
+# Define the objective function to minimize (negative F1 score) (not used)
 objective_function <- function(params, data) {
   ungapped_alnlen <- data$ungapped_alnlen
   pident <- data$pident
