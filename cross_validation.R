@@ -7,20 +7,26 @@ library(data.table)
 library(Metrics)
 
 # Define the HFSP function
-hfsp <- function(params, ungapped_alnlen, fident, lddt) {
+hfsp <- function(params, ungapped_alnlen, pident) {
   factor <- params[1]
   exponent <- params[2]
-  return((fident * lddt * 100) - (factor * (ungapped_alnlen ^ exponent * (1 + exp(-ungapped_alnlen / 1000)))))
+
+  hfsp <- ifelse(ungapped_alnlen <= 11,
+                 PIDE - 101,
+                 ifelse(ungapped_alnlen > 450,
+                        pident - 28.4,
+                        pident - (factor * (ungapped_alnlen ^ (exponent * (1 + exp(- ungapped_alnlen / 1000)))))))
+
+  return(hfsp)
 }
 
 # Define the objective function to minimize (negative F1 score)
 objective_function <- function(params, data) {
   ungapped_alnlen <- data$ungapped_alnlen
-  fident <- data$fident
-  lddt <- data$lddt
+  pident <- data$pident
   true_labels <- as.integer(data$ec_match)
 
-  predictions <- hfsp(params, ungapped_alnlen, fident, lddt) >= 0
+  predictions <- hfsp(params, ungapped_alnlen, pident) >= 0
   f1 <- f1_score(true_labels, predictions)
   return(-f1)
 }
@@ -59,15 +65,11 @@ test_files <- list(
 # Define a function to calculate F1 score, precision, and recall for a given dataset using the optimized parameters
 calculate_metrics <- function(data, params) {
   ungapped_alnlen <- data$ungapped_alnlen
-  fident <- data$fident
-  lddt <- data$lddt
+  pident <- data$fident * 100
   true_labels <- as.integer(data$ec_match)
 
-  # Calculate the y-values for each dot
-  y_values <- fident * lddt * 100
-
   # Calculate HFSP and make predictions
-  hfsp_values <- hfsp(params, ungapped_alnlen, fident, lddt)
+  hfsp_values <- hfsp(params, ungapped_alnlen, pident)
   predictions <- hfsp_values >= 0
 
   # Calculate precision, recall, and F1 score
@@ -82,10 +84,6 @@ calculate_metrics <- function(data, params) {
 read_data <- function(file) {
   return(fread(file, sep = "\t"))
 }
-
-# Optimize parameters for each training dataset
-initial_guess <- c(480, -0.32)
-bounds <- list(c(300, 1500), c(-0.9, -0.3))
 
 # Grid search for best parameters
 grid_search <- function(data) {
@@ -132,15 +130,11 @@ f1_score <- function(true_labels, predictions) {
 
 # Perform cross-validation
 cross_validation_results <- lapply(1:length(train_files), function(i) {
-  cat("Starting cross-validation for fold", i, "\n")
-
   # Use cluster i as the test set
   test_data <- read_data(test_files[[i]])
-  cat("Test data loaded for fold", i, "\n")
 
   # Use all other clusters as the training set
   train_data <- rbindlist(lapply(train_files[i], read_data))
-  cat("Train data loaded for fold", i, "\n")
 
   # Perform grid search to find best parameters
   best_params <- grid_search(train_data)
@@ -151,8 +145,6 @@ cross_validation_results <- lapply(1:length(train_files), function(i) {
 
   # Calculate metrics for the training set
   train_metrics <- calculate_metrics(train_data, best_params)
-
-  cat("Completed cross-validation for fold", i, "\n")
 
   return(list(train_metrics = train_metrics, test_metrics = test_metrics, params = best_params))
 })
