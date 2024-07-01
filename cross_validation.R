@@ -1,6 +1,6 @@
 # Install necessary packages
-install.packages("data.table")
-install.packages("Metrics")
+#install.packages("data.table")
+#install.packages("Metrics")
 
 # Load necessary libraries
 library(data.table)
@@ -20,10 +20,10 @@ hfsp <- function(params, ungapped_alnlen, pident) {
   return(hfsp)
 }
 
-# Define the objective function to minimize (negative F1 score) (not used)
+# Define the objective function to minimize (negative F1 score)
 objective_function <- function(params, data) {
   ungapped_alnlen <- data$ungapped_alnlen
-  pident <- data$pident
+  pident <- data$fident * 100
   true_labels <- as.integer(data$ec_match)
 
   predictions <- hfsp(params, ungapped_alnlen, pident) >= 0
@@ -85,27 +85,6 @@ read_data <- function(file) {
   return(fread(file, sep = "\t"))
 }
 
-# Grid search for best parameters
-grid_search <- function(data) {
-  factors <- seq(300, 1500, by = 50)
-  exponents <- seq(-0.3, -0.9, by = -0.05)
-  best_f1 <- -Inf
-  best_params <- c(NA, NA)
-
-  for (factor in factors) {
-    for (exponent in exponents) {
-      params <- c(factor, exponent)
-      metrics <- calculate_metrics(data, params)
-      if (metrics$f1 > best_f1) {
-        best_f1 <- metrics$f1
-        best_params <- params
-      }
-    }
-  }
-
-  return(best_params)
-}
-
 # Custom precision, recall, and F1 score functions
 precision_score <- function(true_labels, predictions) {
   tp <- sum(true_labels == 1 & predictions == 1)
@@ -136,8 +115,10 @@ cross_validation_results <- lapply(1:length(train_files), function(i) {
   # Use all other clusters as the training set
   train_data <- rbindlist(lapply(train_files[i], read_data))
 
-  # Perform grid search to find best parameters
-  best_params <- grid_search(train_data)
+  # Perform Nelder-Mead optimization to find best parameters
+  initial_params <- c(1000, -0.4)
+  optim_results <- optim(initial_params, objective_function, data = train_data, method = "Nelder-Mead")
+  best_params <- optim_results$par
   cat("Best parameters found for fold", i, ":", best_params, "\n")
 
   # Calculate metrics for the test set
