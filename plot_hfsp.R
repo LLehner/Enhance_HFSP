@@ -43,8 +43,9 @@ get.hfsp.2018 <- function(L) {
 }
 
 
-df <- fread("/nfs/proj/sc-guidelines/pp1/Enhance_HFSP/testing/foldseek/outputs/run1.tsv")
-ec_numbers <- data.table(read_excel("/nfs/home/students/l.hafner/pp1/Enhance_HFSP/testing/hfsp_supplement/Mahlich.335.sup.data.1.xlsx", sheet = 2))
+df <- fread("/nfs/proj/sc-guidelines/pp1/Enhance_HFSP/testing/mmseqs2/outputs/run1.tsv")
+ec_numbers <- fread("/nfs/proj/sc-guidelines/pp1/Enhance_HFSP/testing/3_after_ec_filtering/Swiss-Prot_2002_redundancy_reduced_50.tsv")
+
 
 df_filtered <- df %>%
   filter(query != target) %>%
@@ -54,37 +55,64 @@ df_filtered <- df %>%
   mutate(ug_alnlen = sapply(cigar, calculate_ungapped_length))
 
 ec_numbers <- ec_numbers %>%
-  mutate(ec_3 = sapply(strsplit(as.character(ec_number), "\\."), function(x) paste(x[1:3], collapse = "."))) %>%
-  dplyr::select(id, ec_3)
+  dplyr::select(id, ec3)
 
 data <- data.table(
   inner_join(
     inner_join(df_filtered, ec_numbers, by=c("query" = "id")) %>%
-      dplyr::rename(ec_3_query = ec_3),
+      dplyr::rename(ec3_query = ec3),
     ec_numbers,
     by = c("target" = "id")
   ) %>%
-    dplyr::rename(ec_3_target = ec_3) %>%
-    mutate(ec_3_same = ec_3_query == ec_3_target)
+    dplyr::rename(ec3_target = ec3) %>%
+    mutate(ec3_same = ec3_query == ec3_target)
 ) 
 
-L.values <- seq(0, max(data$ug_alnlen), 1)
-hssp.1991 <- data.table(L = L.values, HSSP.1991 = sapply(L.values, get.hssp.1991))
+data[ec3_same == "TRUE", ec3_same_new := "same 3rd level EC"]
+data[ec3_same == "FALSE", ec3_same_new := "different 3rd level EC"]
+data$ec3_same_new <- factor(data$ec3_same_new)
+
+L.values <- seq(11, max(data$ug_alnlen), 1)
+#hssp.1991 <- data.table(L = L.values, HSSP.1991 = sapply(L.values, get.hssp.1991))
 hssp.2018 <- data.table(L = L.values, HSSP.2018 = sapply(L.values, get.hssp.2018))
 hfsp.2018 <- data.table(L = L.values, HFSP.2018 = sapply(L.values, get.hfsp.2018))
 
 
-p <- ggMarginal(
-  ggplot() +
-    geom_point(data = data %>% filter(ec_3_same), aes(x = ug_alnlen, y = pident), color = "darkgreen", shape="circle") +
-    geom_point(data = data %>% filter(!ec_3_same), aes(x = ug_alnlen, y = pident), color = "orange", shape="triangle") +
-    geom_line(data = hfsp.2018, aes(x = L, y = HFSP.2018), linewidth = 1.5, color="red") +
-    geom_line(data = hssp.2018, aes(x = L, y = HSSP.2018), linewidth = 1.5, color = "blue") +
-    labs(x = "Ungapped alignment length", y = "Percentage of identical residues") +
-    ggtitle("Coverage 0.5") +
-    ylim(0, 100) +
-    theme_cowplot(),
-  type = "histogram")
+plot <- ggplot(data, aes(x = ug_alnlen, y = pident, color = ec3_same_new)) +
+  geom_point() +
+  geom_line(data = hfsp.2018, aes(x = L, y = HFSP.2018, color="HFSP-2018"), linewidth = 1.5) +
+  geom_line(data = hssp.2018, aes(x = L, y = HSSP.2018, color = "HSSP-2002"), linewidth = 1.5) +
+  scale_color_manual(name = element_blank(),
+                     values = c("same 3rd level EC" = "darkgreen",
+                                "different 3rd level EC" = "orange",
+                                "HSSP-2002" = "blue",
+                                "HFSP-2018" = "#FF00FF"),
+                     limits = c("HSSP-2002",
+                                "HFSP-2018",
+                                "same 3rd level EC",
+                                "different 3rd level EC")) +
+  labs(x = "Ungapped alignment length", y = "Sequence identity (%)", color = "same EC") +
+  ylim(0, 100) +
+  xlim(0, 1550) +
+  ggtitle("MMSeqs2") +
+  theme_cowplot() +
+  theme(legend.position = "bottom", 
+        legend.justification = "center",
+        legend.spacing.x = unit(3, "cm")) +
+  guides(color = guide_legend(nrow = 4, byrow = T))
 
+# p <- ggMarginal(
+#   ggplot() +
+#     geom_point(data = data %>% filter(ec_3_same), aes(x = ug_alnlen, y = pident), color = "darkgreen", shape="circle") +
+#     geom_point(data = data %>% filter(!ec_3_same), aes(x = ug_alnlen, y = pident), color = "orange", shape="triangle") +
+#     geom_line(data = hfsp.2018, aes(x = L, y = HFSP.2018), linewidth = 1.5, color="red") +
+#     geom_line(data = hssp.2018, aes(x = L, y = HSSP.2018), linewidth = 1.5, color = "blue") +
+#     labs(x = "Ungapped alignment length", y = "Percentage of identical residues") +
+#     ggtitle("Coverage 0.5") +
+#     ylim(0, 100) +
+#     theme_cowplot(),
+#   groupColour = T, groupFill = T)
 
-ggsave("~/coverage.png", p, width = 1420, height = 1080, units = "px", dpi = 150)
+p <- ggMarginal(plot, groupColour = T, groupFill = T)
+
+#ggsave("~/foldseek.png", p, width = 3000, height = 1000, units = "px")

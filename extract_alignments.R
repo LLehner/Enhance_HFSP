@@ -11,6 +11,7 @@ calculate_ungapped_length <- function(cigar_string) {
 }
 
 base.output <- "/nfs/proj/sc-guidelines/pp1/Enhance_HFSP/testing/4_after_cv_split/with_undersampling"
+base.output.all <- "/nfs/proj/sc-guidelines/pp1/Enhance_HFSP/testing/4_after_cv_split/whole_dataset"
 
 cv.splits <- fread("/nfs/proj/sc-guidelines/pp1/Enhance_HFSP/testing/4_after_cv_split/cv_clusters.tsv")
 cv.splits$fold <- cv.splits$cluster_id + 1
@@ -19,6 +20,46 @@ alignments <- fread("/nfs/proj/sc-guidelines/pp1/Enhance_HFSP/testing/foldseek/o
 proteins <- fread("/nfs/proj/sc-guidelines/pp1/Enhance_HFSP/testing/3_after_ec_filtering/Swiss-Prot_2002_redundancy_reduced_50.tsv") %>%
   dplyr::select(id, ec3)
 
+# Create full dataset
+proteins.all <- cv.splits$protein_id
+
+aln.all <- alignments %>%
+  filter(query %in% proteins.all & target %in% proteins.all) %>%
+  filter(query != target) %>%
+  group_by(query) %>%
+  filter(bits == max(bits)) %>%
+  ungroup() %>%
+  mutate(ug_alnlen = sapply(cigar, calculate_ungapped_length)) %>%
+  dplyr::select(query, target, pident, ug_alnlen)
+
+all <- inner_join(
+  inner_join(aln.all, proteins, by = c("query" = "id")) %>%
+    dplyr::rename(ec3_query = ec3),
+  proteins,
+  by = c("target" = "id")
+) %>%
+  dplyr::rename(ec3_target = ec3) %>%
+  mutate(y_true = ifelse(ec3_query == ec3_target, 1, 0)) %>%
+  dplyr::select(-ec3_query, -ec3_target)
+
+
+train.all.pos <- all %>% filter(y_true == 1)
+train.all.neg <- all %>% filter(y_true == 0)
+
+if (nrow(train.all.pos) < nrow(train.all.neg)) {
+  train.all.neg <- train.all.neg %>% sample_n(nrow(train.all.pos))
+} else {
+  train.all.pos <- train.all.pos %>% sample_n(nrow(train.all.neg))
+}
+
+train.all.balanced <- bind_rows(train.all.pos, train.all.neg)
+test.all <- all
+
+fwrite(train.all.balanced, file = paste0(base.output.all, "/train.tsv"), sep = "\t")
+fwrite(test.all, file = paste0(base.output.all, "/test.tsv"), sep = "\t")
+
+
+# Create cross validation splits
 for (i in 1:10) {
   print(paste("Prepare iteration", i))
     proteins.train <- cv.splits[fold != i]$protein_id

@@ -1,4 +1,5 @@
 library(naturalsort)
+library(data.table)
 
 load_data <- function(input_path) {
   train.paths <- naturalsort(list.files(input_path, pattern = "train_*"))
@@ -57,8 +58,8 @@ test <- data$test
 
 results <- data.table(fold = integer(), factor = numeric(), exponent = numeric(), f1_score = numeric())
 
-factors <- seq(300, 1500, by = 50)
-exponents <- seq(-0.3, -0.9, by = -0.05)
+factors <- seq(200, 600, by = 50)
+exponents <- seq(-0.1, -0.4, by = -0.05)
 
 for (factor in factors) {
   for (exponent in exponents) {
@@ -66,27 +67,25 @@ for (factor in factors) {
     initial_params <- c(factor, exponent)
     
     for (i in 1:length(train)) {
-      if (i > 1) {
-        break
+      if (T) {
+        print(paste("Fold", i))
+        train_data <- train[[i]]
+        test_data <- test[[i]]
+        
+        optim_result <- optim(initial_params, objective_function, train_data = train_data, method = "Nelder-Mead")
+        best_params <- optim_result$par
+        
+        test_data$hfsp <- mapply(hfsp, MoreArgs = list(params = best_params), test_data$ug_alnlen, test_data$pident)
+        y_true <- test_data$y_true
+        y_pred <- ifelse(test_data$hfsp > 0, 1, 0)
+        
+        f1 <- f1_score(y_true, y_pred)
+        results <- rbind(results, data.table(fold = i, factor = best_params[1], exponent= best_params[2], f1_score = f1))
       }
-      print(paste("Fold", i))
-      train_data <- train[[i]]
-      test_data <- test[[i]]
-      
-      optim_result <- optim(initial_params, objective_function, train_data = train_data, method = "Nelder-Mead")
-      best_params <- optim_result$par
-      
-      test_data$hfsp <- mapply(hfsp, MoreArgs = list(params = best_params), test_data$ug_alnlen, test_data$pident)
-      y_true <- test_data$y_true
-      y_pred <- ifelse(test_data$hfsp > 0, 1, 0)
-      
-      f1 <- f1_score(y_true, y_pred)
-      results <- rbind(results, data.table(fold = i, factor = best_params[1], exponent= best_params[2], f1_score = f1))
     }
   }
 }
 
-fwrite(results, "/nfs/home/students/l.hafner/pp1/Enhance_HFSP/results_run1.tsv", sep ="\t")
-
-#summary_results <- results[, .(mean_f1_score = mean(f1_score)), by = .(factor, exponent)]
-#summary_results[mean_f1_score == max(mean_f1_score)]
+fwrite(results, "/nfs/home/students/l.hafner/pp1/Enhance_HFSP/results_run2.tsv", sep ="\t")
+results_per_fold <- results[, .SD[which.max(f1_score)], by = fold]
+fwrite(results_per_fold, "/nfs/home/students/l.hafner/pp1/Enhance_HFSP/results_per_fold_run2.tsv", sep = "\t")

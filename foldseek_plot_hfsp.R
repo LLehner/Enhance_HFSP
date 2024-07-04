@@ -42,8 +42,18 @@ get.hfsp.2018 <- function(L) {
   }
 }
 
+get.new.hfsp <- function(L) {
+  if (L <= 11) {
+    return(100)
+  } else if (11 < L & L <= 450) {
+    return(200.35 * L ^ (-0.221 * (1 + exp(1) ^ (-L / 1000))))
+  } else {
+    return(get.new.hfsp(450))
+  }
+}
+
 df <- fread("/nfs/proj/sc-guidelines/pp1/Enhance_HFSP/testing/foldseek/outputs/run1.tsv")
-ec_numbers <- fread("/nfs/proj/sc-guidelines/pp1/Enhance_HFSP/testing/Swiss-Prot_2002_redundancy_reduced_50.tsv")
+ec_numbers <- fread("/nfs/proj/sc-guidelines/pp1/Enhance_HFSP/testing/3_after_ec_filtering/Swiss-Prot_2002_redundancy_reduced_50.tsv")
 
 df_filtered <- df %>%
   filter(query != target) %>%
@@ -66,14 +76,15 @@ data <- data.table(
     mutate(ec3_same = ec3_query == ec3_target)
 )
 
-data[ec3_same == "TRUE", ec3_same_new := "same EC"]
-data[ec3_same == "FALSE", ec3_same_new := "different EC"]
+data[ec3_same == "TRUE", ec3_same_new := "same 3rd level EC"]
+data[ec3_same == "FALSE", ec3_same_new := "different 3rd level EC"]
 data$ec3_same_new <- factor(data$ec3_same_new)
 
 L.values <- seq(0, max(data$ug_alnlen), 1)
 hssp.1991 <- data.table(L = L.values, HSSP.1991 = sapply(L.values, get.hssp.1991))
 hssp.2018 <- data.table(L = L.values, HSSP.2018 = sapply(L.values, get.hssp.2018))
 hfsp.2018 <- data.table(L = L.values, HFSP.2018 = sapply(L.values, get.hfsp.2018))
+hfsp.new <- data.table(L = L.values, HFSP.new = sapply(L.values, get.new.hfsp))
 
 
 # p <- ggplot() +
@@ -90,19 +101,30 @@ hfsp.2018 <- data.table(L = L.values, HFSP.2018 = sapply(L.values, get.hfsp.2018
 
 plot <- ggplot(data, aes(x = ug_alnlen, y = pident, color = ec3_same_new)) +
   geom_point() +
-  geom_line(data = hfsp.2018, aes(x = L, y = HFSP.2018, color="HFSP"), linewidth = 1.5) +
-  geom_line(data = hssp.2018, aes(x = L, y = HSSP.2018, color = "HSSP"), linewidth = 1.5) +
-  scale_color_manual(name = element_blank(), values = c("same EC" = "darkgreen",
-                                                 "different EC" = "orange",
-                                                 "HFSP" = "red",
-                                                 "HSSP" = "blue")) +
-  labs(x = "Ungapped alignment length", y = "Percentage of identical residues", color = "same EC") +
+  geom_line(data = hfsp.2018, aes(x = L, y = HFSP.2018, color="HFSP-2018"), linewidth = 1.2) +
+  geom_line(data = hssp.2018, aes(x = L, y = HSSP.2018, color = "HSSP-2002"), linewidth = 1.2) +
+  geom_line(data = hfsp.new, aes(x = L, y = HFSP.new, color ="HFSP-2024"), linewidth = 1.2) + 
+  scale_color_manual(name = element_blank(),
+                     values = c("same 3rd level EC" = "darkgreen",
+                                "different 3rd level EC" = "orange",
+                                "HSSP-2002" = "blue",
+                                "HFSP-2018" = "#FF00FF",
+                                "HFSP-2024" = "red"),
+                     limits = c("HSSP-2002",
+                                "HFSP-2018",
+                                "HFSP-2024",
+                                "same 3rd level EC",
+                                "different 3rd level EC")) +
+  labs(x = "Ungapped alignment length", y = "Sequence identity (%)", color = "same EC") +
   ylim(0, 100) +
   ggtitle("Foldseek") +
   theme_cowplot() +
-  theme(legend.position = "bottom", legend.justification = "center")
-
- p <- ggMarginal(plot, groupColour = T, groupFill = T)
-
+  theme(legend.position = "bottom", 
+        legend.justification = "center",
+        legend.spacing.x = unit(3, "cm")) +
+  guides(color = guide_legend(nrow = 2, byrow = T))
+plot
+p <- ggMarginal(plot, groupColour = T, groupFill = T)
+p
 ggsave("~/foldseek.png", p)
 
